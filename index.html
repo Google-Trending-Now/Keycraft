@@ -1,0 +1,1920 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Strong Random Password Generator Online | Keycraft</title>
+  <meta name="description" content="Create strong, unpredictable passwords with our customizable password creator with symbols. 100% client-side secure password generator with no storage." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://keycraft.example.com/" />
+
+  <!-- Open Graph / Social Sharing -->
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:site_name" content="Keycraft" />
+  <meta property="og:title" content="Strong Random Password Generator Online | Keycraft" />
+  <meta property="og:description" content="Create strong, unpredictable passwords locally in your browser using Web Crypto randomness. Customize length, symbols, and character rules with zero storage." />
+  <meta property="og:url" content="https://keycraft.example.com/" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Strong Random Password Generator Online | Keycraft" />
+  <meta name="twitter:description" content="Customizable password creator with symbols, entropy readout, and local-only Web Crypto generation. No server calls, no storage." />
+
+  <!-- Typography: Plus Jakarta Sans (Display), DM Sans (Body), JetBrains Mono (Passwords & Metrics) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet" />
+
+  <!-- Structured Data: WebApplication -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Keycraft Random Password Generator",
+    "url": "https://keycraft.example.com/",
+    "applicationCategory": "SecurityApplication",
+    "operatingSystem": "Any",
+    "browserRequirements": "Requires JavaScript and Web Crypto API",
+    "inLanguage": "en-US",
+    "description": "A fast, client-side random password generator that creates cryptographically secure passwords with customizable length, character sets, and ambiguity filters directly in your browser.",
+    "featureList": [
+      "Cryptographically secure generation via window.crypto.getRandomValues()",
+      "Adjustable length from 8 to 64 characters",
+      "Uppercase, lowercase, numeric, and symbol toggles",
+      "Exclude ambiguous characters and avoid repeating characters options",
+      "Real-time entropy calculation and strength rating",
+      "In-memory session history with zero persistent storage"
+    ],
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
+
+  <!-- Structured Data: FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Are passwords generated on this page sent to a server or stored anywhere?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Every password is generated locally on your device using your browser's built-in window.crypto.getRandomValues() API. Nothing is transmitted over the network, and session history stays strictly in temporary browser memory until you close or refresh the tab."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How long should a strong random password be?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "For everyday accounts like email, banking, and password managers, aim for at least 16 characters mixing uppercase letters, lowercase letters, numbers, and symbols. For master passwords or sensitive developer keys, 24 to 32 characters provides a wide safety margin against offline brute-force attacks."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What makes window.crypto.getRandomValues() safer than Math.random()?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Math.random() is a standard pseudorandom generator meant for animations or games, not security; its internal state can sometimes be predicted. window.crypto.getRandomValues() draws entropy from your operating system's cryptographic random source, making each character genuinely unpredictable."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "When should I exclude ambiguous characters?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Turn on Exclude ambiguous characters (0, O, 1, l, I) whenever you expect to read a password aloud, print it on paper, or type it manually onto a TV, phone, or terminal screen. For passwords stored in a password manager, leaving all characters enabled maximizes randomness."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Should I use a random character string or a memorable passphrase?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Use random character strings for accounts saved in a password manager, where you never need to type them by hand. If you must memorize a password—such as your laptop login or password manager master key—a long passphrase made of four or more unrelated random words is easier to recall and still hard to crack."
+        }
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    :root {
+      --bg-canvas: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-subtle: #f1f5f9;
+      --bg-hover: #e2e8f0;
+      --border-hairline: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --accent: #1d4ed8;
+      --accent-hover: #1e40af;
+      --accent-soft: #eff6ff;
+      --accent-ink: #ffffff;
+      --focus-ring: #2563eb;
+
+      --char-num: #0369a1;
+      --char-sym: #b45309;
+
+      --strength-weak: #dc2626;
+      --strength-fair: #d97706;
+      --strength-good: #0284c7;
+      --strength-strong: #15803d;
+
+      --font-display: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-body: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+      --radius-lg: 14px;
+      --radius-md: 10px;
+      --radius-sm: 8px;
+      --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.05), 0 8px 24px rgba(15, 23, 42, 0.04);
+      --transition-fast: 150ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    html[data-theme="dark"] {
+      --bg-canvas: #0b1120;
+      --bg-surface: #111827;
+      --bg-subtle: #1e293b;
+      --bg-hover: #283548;
+      --border-hairline: #1e293b;
+      --border-strong: #334155;
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --accent: #2563eb;
+      --accent-hover: #3b82f6;
+      --accent-soft: rgba(37, 99, 235, 0.16);
+      --accent-ink: #ffffff;
+      --focus-ring: #60a5fa;
+
+      --char-num: #38bdf8;
+      --char-sym: #fbbf24;
+
+      --strength-weak: #f87171;
+      --strength-fair: #fbbf24;
+      --strength-good: #38bdf8;
+      --strength-strong: #4ade80;
+
+      --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 12px 32px rgba(0, 0, 0, 0.25);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+      *, *::before, *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+      }
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--text-primary);
+      background-color: var(--bg-canvas);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    html[data-theme="dark"] body {
+      letter-spacing: 0.005em;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Top Bar Contract: 3 zones separated by gap */
+    .site-header {
+      border-bottom: 1px solid var(--border-hairline);
+      background-color: var(--bg-canvas);
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 32px;
+      min-height: 68px;
+    }
+
+    .brand {
+      font-family: var(--font-display);
+      font-size: 1.1875rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      text-decoration: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .nav-links a {
+      font-size: 0.9375rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-decoration: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: color var(--transition-fast);
+    }
+
+    .nav-links a:hover {
+      color: var(--text-primary);
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    .theme-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 40px;
+      padding: 8px 16px;
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: background-color var(--transition-fast), border-color var(--transition-fast);
+    }
+
+    .theme-btn:hover {
+      background-color: var(--bg-subtle);
+      border-color: var(--border-strong);
+    }
+
+    .theme-btn svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    /* Hero + Tool Section */
+    .hero-section {
+      padding: 48px 0 36px;
+    }
+
+    .hero-intro {
+      max-width: 720px;
+      margin-bottom: 28px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 3.6vw, 2.75rem);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.025em;
+      color: var(--text-primary);
+      text-wrap: balance;
+    }
+
+    .hero-sub {
+      margin: 0;
+      font-size: 1.0625rem;
+      line-height: 1.6;
+      color: var(--text-secondary);
+    }
+
+    /* Main Generator Card (Single Elevation) */
+    .generator-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+      padding: 28px;
+    }
+
+    /* Password Output Row */
+    .output-block {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: stretch;
+      margin-bottom: 18px;
+    }
+
+    .password-stage {
+      display: flex;
+      align-items: center;
+      min-height: 76px;
+      padding: 16px 20px;
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-md);
+      overflow-x: auto;
+    }
+
+    .password-readout {
+      font-family: var(--font-mono);
+      font-size: clamp(1.125rem, 2.2vw, 1.5rem);
+      font-weight: 500;
+      line-height: 1.4;
+      letter-spacing: 0.02em;
+      color: var(--text-primary);
+      word-break: break-all;
+      user-select: all;
+      font-variant-numeric: tabular-nums;
+      margin: 0;
+      width: 100%;
+    }
+
+    .password-readout .ch-num {
+      color: var(--char-num);
+    }
+
+    .password-readout .ch-sym {
+      color: var(--char-sym);
+    }
+
+    .output-actions {
+      display: flex;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 10px 20px;
+      font-family: var(--font-body);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: background-color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+    }
+
+    .btn-primary {
+      background-color: var(--accent);
+      color: var(--accent-ink);
+      border: 1px solid transparent;
+      min-width: 118px;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--accent-hover);
+    }
+
+    .btn-primary:active,
+    .btn-secondary:active {
+      transform: scale(0.98);
+    }
+
+    .btn-secondary {
+      background-color: var(--bg-surface);
+      color: var(--text-primary);
+      border: 1px solid var(--border-strong);
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--bg-subtle);
+    }
+
+    .btn-primary svg,
+    .btn-secondary svg {
+      width: 17px;
+      height: 17px;
+      flex-shrink: 0;
+    }
+
+    /* Strength & Entropy Bar */
+    .strength-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px 24px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid var(--border-hairline);
+    }
+
+    .strength-meter-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex: 1 1 280px;
+    }
+
+    .strength-bars {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      width: 144px;
+      flex-shrink: 0;
+    }
+
+    .strength-bar {
+      height: 6px;
+      border-radius: 3px;
+      background-color: var(--bg-hover);
+      transition: background-color var(--transition-fast);
+    }
+
+    .strength-label {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .strength-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .strength-meta .mono-val {
+      font-family: var(--font-mono);
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .sep {
+      color: var(--text-muted);
+    }
+
+    /* Controls Grid */
+    .controls-body {
+      padding-top: 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px 36px;
+    }
+
+    .control-group-title {
+      margin: 0 0 12px;
+      font-family: var(--font-display);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* Presets */
+    .presets-row {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .presets-label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .preset-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .preset-btn {
+      min-height: 40px;
+      padding: 8px 14px;
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+    }
+
+    .preset-btn:hover {
+      color: var(--text-primary);
+      background-color: var(--bg-hover);
+    }
+
+    .preset-btn[aria-pressed="true"] {
+      color: var(--accent);
+      background-color: var(--accent-soft);
+      border-color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* Length Control */
+    .length-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .length-header label {
+      font-family: var(--font-display);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .length-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .length-num {
+      width: 68px;
+      min-height: 40px;
+      padding: 6px 10px;
+      font-family: var(--font-mono);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      text-align: center;
+      color: var(--text-primary);
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+    }
+
+    .length-slider {
+      width: 100%;
+      height: 8px;
+      appearance: none;
+      -webkit-appearance: none;
+      background: var(--bg-hover);
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 8px 0 10px;
+    }
+
+    .length-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg-surface);
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.25);
+      cursor: pointer;
+    }
+
+    .length-slider::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg-surface);
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.25);
+      cursor: pointer;
+    }
+
+    .slider-scale {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Checkboxes */
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .check-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 44px;
+      padding: 8px 12px;
+      background-color: var(--bg-subtle);
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      user-select: none;
+      transition: background-color var(--transition-fast), border-color var(--transition-fast);
+    }
+
+    .check-option:hover {
+      background-color: var(--bg-hover);
+    }
+
+    .check-option input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+      cursor: pointer;
+      flex-shrink: 0;
+      margin: 0;
+    }
+
+    .check-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.25;
+      min-width: 0;
+    }
+
+    .check-title {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .check-sample {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .refinement-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .rule-notice {
+      margin: 10px 0 0;
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+      min-height: 20px;
+    }
+
+    /* Local Privacy Note & Session History */
+    .privacy-strip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border-hairline);
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .privacy-strip svg {
+      width: 18px;
+      height: 18px;
+      color: var(--strength-strong);
+      flex-shrink: 0;
+    }
+
+    .privacy-strip code {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      color: var(--text-primary);
+    }
+
+    .history-panel {
+      margin-top: 20px;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+    }
+
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .history-header h2 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .history-sub {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+    }
+
+    .text-action-btn {
+      min-height: 36px;
+      padding: 6px 12px;
+      font-family: var(--font-body);
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: transparent;
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: color var(--transition-fast), background-color var(--transition-fast);
+    }
+
+    .text-action-btn:hover {
+      color: var(--text-primary);
+      background-color: var(--bg-subtle);
+    }
+
+    .history-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 0;
+      border-top: 1px solid var(--border-hairline);
+    }
+
+    .history-item:first-child {
+      border-top: none;
+    }
+
+    .history-pw {
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .history-meta {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .history-empty {
+      margin: 6px 0 0;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    /* Editorial SEO Content Sections */
+    .content-section {
+      padding: 44px 0;
+      border-top: 1px solid var(--border-hairline);
+    }
+
+    .content-section h2 {
+      margin: 0 0 16px;
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      text-wrap: balance;
+    }
+
+    .content-section h3 {
+      margin: 0 0 8px;
+      font-family: var(--font-display);
+      font-size: 1.0625rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .content-lead {
+      max-width: 72ch;
+      margin: 0 0 28px;
+      color: var(--text-secondary);
+    }
+
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px 36px;
+    }
+
+    .guide-item p {
+      margin: 0;
+      color: var(--text-secondary);
+      font-size: 0.9375rem;
+      line-height: 1.65;
+    }
+
+    .privacy-columns {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    .privacy-prose p {
+      margin: 0 0 14px;
+      color: var(--text-secondary);
+      max-width: 68ch;
+    }
+
+    .privacy-prose p:last-child {
+      margin-bottom: 0;
+    }
+
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    .spec-table th,
+    .spec-table td {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 0.875rem;
+      border-bottom: 1px solid var(--border-hairline);
+    }
+
+    .spec-table tr:last-child th,
+    .spec-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .spec-table th {
+      font-weight: 600;
+      color: var(--text-primary);
+      width: 44%;
+    }
+
+    .spec-table td {
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+    }
+
+    /* FAQ Accordion */
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 820px;
+    }
+
+    .faq-item {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-md);
+      padding: 0;
+    }
+
+    .faq-item summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 20px;
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .faq-item summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .faq-item summary::after {
+      content: "+";
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      font-weight: 400;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .faq-item[open] summary::after {
+      content: "−";
+    }
+
+    .faq-answer {
+      padding: 0 20px 18px;
+      margin: 0;
+      font-size: 0.9375rem;
+      line-height: 1.65;
+      color: var(--text-secondary);
+    }
+
+    /* Footer */
+    .site-footer {
+      border-top: 1px solid var(--border-hairline);
+      padding: 28px 0 40px;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .footer-inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .footer-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+    }
+
+    .footer-links a:hover {
+      color: var(--text-primary);
+      text-decoration: underline;
+    }
+
+    /* Responsive Breakpoints */
+    @media (max-width: 820px) {
+      .nav-links {
+        display: none;
+      }
+
+      .output-block {
+        grid-template-columns: 1fr;
+      }
+
+      .output-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .controls-body {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+
+      .guide-grid,
+      .privacy-columns {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .container {
+        padding: 0 16px;
+      }
+
+      .generator-card {
+        padding: 20px 16px;
+      }
+
+      .options-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .history-item {
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+<body id="top">
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="#top" class="brand">Keycraft</a>
+
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="#generator">Generator</a>
+        <a href="#guide">How to Choose</a>
+        <a href="#privacy">Local Privacy</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+
+      <button type="button" id="theme-toggle" class="theme-btn" aria-pressed="false" aria-label="Switch color theme">
+        <svg id="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+        </svg>
+        <svg id="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden>
+          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+        </svg>
+        <span id="theme-label">Dark Mode</span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section id="generator" class="hero-section">
+      <div class="container">
+        <div class="hero-intro">
+          <h1>Strong Random Password Generator</h1>
+          <p class="hero-sub">
+            A customizable password creator with symbols, numbers, and ambiguity filters. Every password is built locally in your browser with cryptographic randomness and zero server storage.
+          </p>
+        </div>
+
+        <div class="generator-card" role="region" aria-label="Password generator controls">
+          <!-- Output Display & Primary Actions -->
+          <div class="output-block">
+            <div class="password-stage">
+              <p id="password-output" class="password-readout" aria-live="polite" aria-label="Generated password"></p>
+            </div>
+            <div class="output-actions">
+              <button type="button" id="copy-btn" class="btn-primary">
+                <svg id="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+                  <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+                </svg>
+                <svg id="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden>
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span id="copy-label">Copy</span>
+              </button>
+              <button type="button" id="regenerate-btn" class="btn-secondary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                  <path d="M3 3v5h5"></path>
+                  <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
+                  <path d="M16 16h5v5"></path>
+                </svg>
+                <span>Regenerate</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Strength & Entropy Meter -->
+          <div class="strength-row">
+            <div class="strength-meter-wrap">
+              <div class="strength-bars" aria-hidden="true">
+                <div class="strength-bar" data-seg="1"></div>
+                <div class="strength-bar" data-seg="2"></div>
+                <div class="strength-bar" data-seg="3"></div>
+                <div class="strength-bar" data-seg="4"></div>
+              </div>
+              <span id="strength-label" class="strength-label">Strong</span>
+            </div>
+
+            <div class="strength-meta">
+              <span>Entropy: <span id="entropy-bits" class="mono-val">0 bits</span></span>
+              <span class="sep" aria-hidden="true">·</span>
+              <span>Estimated crack time: <span id="crack-time" class="mono-val">—</span></span>
+            </div>
+          </div>
+
+          <!-- Configuration Controls -->
+          <div class="controls-body">
+            <div class="presets-row">
+              <span class="presets-label">Quick Presets</span>
+              <div class="preset-buttons" role="group" aria-label="Password presets">
+                <button type="button" class="preset-btn" data-preset="strong" aria-pressed="true">Strong Default</button>
+                <button type="button" class="preset-btn" data-preset="readable" aria-pressed="false">Easy to Read</button>
+                <button type="button" class="preset-btn" data-preset="pin" aria-pressed="false">PIN / Numeric</button>
+                <button type="button" class="preset-btn" data-preset="ultra" aria-pressed="false">Ultra Long</button>
+              </div>
+            </div>
+
+            <!-- Left Column: Length & Refinements -->
+            <div>
+              <div class="length-header">
+                <label for="length-slider">Password Length</label>
+                <div class="length-input-wrap">
+                  <input
+                    type="number"
+                    id="length-number"
+                    class="length-num"
+                    min="8"
+                    max="64"
+                    value="16"
+                    aria-label="Password length in characters"
+                  />
+                </div>
+              </div>
+              <input
+                type="range"
+                id="length-slider"
+                class="length-slider"
+                min="8"
+                max="64"
+                value="16"
+              />
+              <div class="slider-scale" aria-hidden="true">
+                <span>8</span>
+                <span>20</span>
+                <span>36</span>
+                <span>50</span>
+                <span>64</span>
+              </div>
+
+              <div class="refinement-list">
+                <label class="check-option">
+                  <input type="checkbox" id="opt-ambiguous" />
+                  <span class="check-text">
+                    <span class="check-title">Exclude ambiguous characters</span>
+                    <span class="check-sample">Skips 0, O, 1, l, I</span>
+                  </span>
+                </label>
+
+                <label class="check-option">
+                  <input type="checkbox" id="opt-norepeat" />
+                  <span class="check-text">
+                    <span class="check-title">Avoid repeating characters</span>
+                    <span class="check-sample">Limits duplicate characters</span>
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Right Column: Character Sets -->
+            <div>
+              <h2 class="control-group-title">Character Sets</h2>
+              <div class="options-grid">
+                <label class="check-option">
+                  <input type="checkbox" id="opt-upper" checked />
+                  <span class="check-text">
+                    <span class="check-title">Uppercase</span>
+                    <span class="check-sample">A–Z</span>
+                  </span>
+                </label>
+
+                <label class="check-option">
+                  <input type="checkbox" id="opt-lower" checked />
+                  <span class="check-text">
+                    <span class="check-title">Lowercase</span>
+                    <span class="check-sample">a–z</span>
+                  </span>
+                </label>
+
+                <label class="check-option">
+                  <input type="checkbox" id="opt-numbers" checked />
+                  <span class="check-text">
+                    <span class="check-title">Numbers</span>
+                    <span class="check-sample">0–9</span>
+                  </span>
+                </label>
+
+                <label class="check-option">
+                  <input type="checkbox" id="opt-symbols" checked />
+                  <span class="check-text">
+                    <span class="check-title">Symbols</span>
+                    <span class="check-sample">!@#$%^&amp;*()-_=+</span>
+                  </span>
+                </label>
+              </div>
+              <p id="rule-notice" class="rule-notice" role="status" aria-live="polite"></p>
+            </div>
+          </div>
+
+          <div class="privacy-strip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            <span>
+              Generated locally via <code>window.crypto.getRandomValues()</code>. Passwords never leave your browser and are never saved to disk or cookies.
+            </span>
+          </div>
+        </div>
+
+        <!-- In-Memory Session History -->
+        <aside class="history-panel" aria-label="Session password history">
+          <div class="history-header">
+            <div>
+              <h2>Recent Session History</h2>
+              <span class="history-sub">Kept in temporary tab memory only — cleared automatically when you close or reload this page.</span>
+            </div>
+            <button type="button" id="clear-history-btn" class="text-action-btn">Clear History</button>
+          </div>
+          <ul id="history-list" class="history-list"></ul>
+          <p id="history-empty" class="history-empty">Passwords you regenerate or copy during this session will appear here.</p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Guide: How to Pick a Strong Password -->
+    <section id="guide" class="content-section">
+      <div class="container">
+        <h2>How to Pick a Strong Password That Holds Up</h2>
+        <p class="content-lead">
+          Good password hygiene does not require memorizing cryptic strings for every website. Focus on length, true randomness, and keeping every login separate.
+        </p>
+
+        <div class="guide-grid">
+          <article class="guide-item">
+            <h3>Length beats clever substitutions</h3>
+            <p>
+              Swapping an "a" for "@" or tacking "2026!" onto a favorite word is the first pattern cracking dictionaries check. Adding four extra random characters multiplies the search space far more than replacing letters in a dictionary word.
+            </p>
+          </article>
+
+          <article class="guide-item">
+            <h3>Use at least 16 characters by default</h3>
+            <p>
+              For email, banking, and cloud storage accounts, 16 characters across uppercase, lowercase, digits, and symbols gives roughly 104 bits of entropy. That keeps your credentials well out of reach of modern GPU cracking rigs.
+            </p>
+          </article>
+
+          <article class="guide-item">
+            <h3>Match the preset to how you log in</h3>
+            <p>
+              When saving a login inside a password manager, keep symbols and ambiguous characters turned on for maximum randomness. When you need to type a credential onto a smart TV, terminal, or phone screen, switch to Easy to Read to skip look-alikes like <code>0</code>, <code>O</code>, <code>1</code>, <code>l</code>, and <code>I</code>.
+            </p>
+          </article>
+
+          <article class="guide-item">
+            <h3>Random strings vs. memorable passphrases</h3>
+            <p>
+              A memorable and random password tool serves two different jobs. Random character strings are ideal when your browser or manager auto-fills them; if you have to memorize a master password, combine four or more unrelated words instead of shortening a character string.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Privacy Explanation -->
+    <section id="privacy" class="content-section">
+      <div class="container">
+        <h2>Why Client-Side Generation Matters for Privacy</h2>
+        <div class="privacy-columns">
+          <div class="privacy-prose">
+            <p>
+              If a password generator creates credentials on a remote web server, you have to trust that server not to log requests, cache responses, or expose traffic over a misconfigured proxy. Running generation strictly inside your browser removes the server from the equation entirely.
+            </p>
+            <p>
+              Keycraft uses your browser's native <code>window.crypto.getRandomValues()</code> interface with rejection sampling rather than <code>Math.random()</code>. Standard <code>Math.random()</code> is built for UI math and games, whereas Web Crypto pulls entropy directly from your operating system's cryptographic random pool and avoids modulo bias across character sets.
+            </p>
+            <p>
+              Your recent session list lives in a plain JavaScript array in RAM. Nothing is written to <code>localStorage</code>, <code>sessionStorage</code>, IndexedDB, or analytics beacons.
+            </p>
+          </div>
+
+          <table class="spec-table" aria-label="Technical security specifications">
+            <tbody>
+              <tr>
+                <th scope="row">Randomness source</th>
+                <td>window.crypto.getRandomValues()</td>
+              </tr>
+              <tr>
+                <th scope="row">Bias mitigation</th>
+                <td>Uint32 rejection sampling</td>
+              </tr>
+              <tr>
+                <th scope="row">Position shuffle</th>
+                <td>Unbiased Fisher-Yates</td>
+              </tr>
+              <tr>
+                <th scope="row">Network requests</th>
+                <td>0 during generation</td>
+              </tr>
+              <tr>
+                <th scope="row">Persistent storage</th>
+                <td>None (volatile memory only)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ Section (matches FAQPage JSON-LD) -->
+    <section id="faq" class="content-section">
+      <div class="container">
+        <h2>Frequently Asked Questions</h2>
+        <div class="faq-list">
+          <details class="faq-item" open>
+            <summary>Are passwords generated on this page sent to a server or stored anywhere?</summary>
+            <p class="faq-answer">
+              No. Every password is generated locally on your device using your browser's built-in <code>window.crypto.getRandomValues()</code> API. Nothing is transmitted over the network, and session history stays strictly in temporary browser memory until you close or refresh the tab.
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary>How long should a strong random password be?</summary>
+            <p class="faq-answer">
+              For everyday accounts like email, banking, and password managers, aim for at least 16 characters mixing uppercase letters, lowercase letters, numbers, and symbols. For master passwords or sensitive developer keys, 24 to 32 characters provides a wide safety margin against offline brute-force attacks.
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary>What makes window.crypto.getRandomValues() safer than Math.random()?</summary>
+            <p class="faq-answer">
+              <code>Math.random()</code> is a standard pseudorandom generator meant for animations or games, not security; its internal state can sometimes be predicted. <code>window.crypto.getRandomValues()</code> draws entropy from your operating system's cryptographic random source, making each character genuinely unpredictable.
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary>When should I exclude ambiguous characters?</summary>
+            <p class="faq-answer">
+              Turn on Exclude ambiguous characters (<code>0</code>, <code>O</code>, <code>1</code>, <code>l</code>, <code>I</code>) whenever you expect to read a password aloud, print it on paper, or type it manually onto a TV, phone, or terminal screen. For passwords stored in a password manager, leaving all characters enabled maximizes randomness.
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary>Should I use a random character string or a memorable passphrase?</summary>
+            <p class="faq-answer">
+              Use random character strings for accounts saved in a password manager, where you never need to type them by hand. If you must memorize a password—such as your laptop login or password manager master key—a long passphrase made of four or more unrelated random words is easier to recall and still hard to crack.
+            </p>
+          </details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>Keycraft · Client-side password generator built with Web Crypto.</span>
+      <div class="footer-links">
+        <a href="#generator">Back to Generator</a>
+        <a href="#guide">Password Guide</a>
+        <a href="#faq">FAQ</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const CHAR_SETS = {
+        upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        lower: "abcdefghijklmnopqrstuvwxyz",
+        numbers: "0123456789",
+        symbols: "!@#$%^&*()-_=+[]{}|;:,.<>?"
+      };
+
+      const AMBIGUOUS_PATTERN = /[0O1lI]/g;
+
+      // DOM References
+      const htmlEl = document.documentElement;
+      const themeToggleBtn = document.getElementById("theme-toggle");
+      const themeLabel = document.getElementById("theme-label");
+      const sunIcon = document.getElementById("theme-icon-sun");
+      const moonIcon = document.getElementById("theme-icon-moon");
+
+      const passwordOutput = document.getElementById("password-output");
+      const copyBtn = document.getElementById("copy-btn");
+      const copyLabel = document.getElementById("copy-label");
+      const copyIcon = document.getElementById("copy-icon");
+      const checkIcon = document.getElementById("check-icon");
+      const regenerateBtn = document.getElementById("regenerate-btn");
+
+      const lengthSlider = document.getElementById("length-slider");
+      const lengthNumber = document.getElementById("length-number");
+      const optUpper = document.getElementById("opt-upper");
+      const optLower = document.getElementById("opt-lower");
+      const optNumbers = document.getElementById("opt-numbers");
+      const optSymbols = document.getElementById("opt-symbols");
+      const optAmbiguous = document.getElementById("opt-ambiguous");
+      const optNoRepeat = document.getElementById("opt-norepeat");
+      const ruleNotice = document.getElementById("rule-notice");
+
+      const presetButtons = Array.from(document.querySelectorAll(".preset-btn"));
+      const strengthBars = Array.from(document.querySelectorAll(".strength-bar"));
+      const strengthLabel = document.getElementById("strength-label");
+      const entropyBitsEl = document.getElementById("entropy-bits");
+      const crackTimeEl = document.getElementById("crack-time");
+
+      const historyList = document.getElementById("history-list");
+      const historyEmpty = document.getElementById("history-empty");
+      const clearHistoryBtn = document.getElementById("clear-history-btn");
+
+      // Volatile in-memory state (never persisted)
+      let currentPassword = "";
+      let sessionHistory = [];
+      let copyResetTimer = null;
+
+      // --- Theme Management ---
+      function applyTheme(theme) {
+        const isDark = theme === "dark";
+        htmlEl.setAttribute("data-theme", theme);
+        themeToggleBtn.setAttribute("aria-pressed", String(isDark));
+        themeLabel.textContent = isDark ? "Light Mode" : "Dark Mode";
+        sunIcon.hidden = !isDark;
+        moonIcon.hidden = isDark;
+      }
+
+      const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      applyTheme(prefersDark ? "dark" : "light");
+
+      themeToggleBtn.addEventListener("click", function () {
+        const next = htmlEl.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        applyTheme(next);
+      });
+
+      // --- Cryptographically Secure Randomness ---
+      function getSecureRandomInt(max) {
+        if (max <= 1) return 0;
+        const limit = Math.floor(0x100000000 / max) * max;
+        const buf = new Uint32Array(1);
+        let val;
+        do {
+          window.crypto.getRandomValues(buf);
+          val = buf[0];
+        } while (val >= limit);
+        return val % max;
+      }
+
+      function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = getSecureRandomInt(i + 1);
+          const tmp = arr[i];
+          arr[i] = arr[j];
+          arr[j] = tmp;
+        }
+        return arr;
+      }
+
+      // --- Character Pool Helpers ---
+      function getActiveSetObjects() {
+        const stripAmbiguous = optAmbiguous.checked;
+        const rawSets = [
+          { key: "upper", enabled: optUpper.checked, chars: CHAR_SETS.upper },
+          { key: "lower", enabled: optLower.checked, chars: CHAR_SETS.lower },
+          { key: "numbers", enabled: optNumbers.checked, chars: CHAR_SETS.numbers },
+          { key: "symbols", enabled: optSymbols.checked, chars: CHAR_SETS.symbols }
+        ];
+
+        const active = [];
+        for (let i = 0; i < rawSets.length; i++) {
+          const s = rawSets[i];
+          if (!s.enabled) continue;
+          const filtered = stripAmbiguous ? s.chars.replace(AMBIGUOUS_PATTERN, "") : s.chars;
+          if (filtered.length > 0) {
+            active.push({ key: s.key, chars: filtered });
+          }
+        }
+        return active;
+      }
+
+      function generatePassword(length) {
+        const activeSets = getActiveSetObjects();
+        if (activeSets.length === 0) return { password: "", poolSize: 0, note: "" };
+
+        let combinedPool = "";
+        for (let i = 0; i < activeSets.length; i++) {
+          combinedPool += activeSets[i].chars;
+        }
+
+        const noRepeat = optNoRepeat.checked;
+        const poolChars = combinedPool.split("");
+        const result = [];
+        let note = "";
+
+        if (noRepeat && length <= poolChars.length) {
+          // Strict non-repeating mode: pick 1 from each enabled set first (if length allows), then unique picks
+          const used = new Set();
+          const guaranteedSets = activeSets.slice(0, length);
+          for (let i = 0; i < guaranteedSets.length; i++) {
+            const setChars = guaranteedSets[i].chars;
+            const ch = setChars[getSecureRandomInt(setChars.length)];
+            if (!used.has(ch)) {
+              used.add(ch);
+              result.push(ch);
+            }
+          }
+
+          const remainingPool = poolChars.filter(function (c) {
+            return !used.has(c);
+          });
+
+          while (result.length < length && remainingPool.length > 0) {
+            const idx = getSecureRandomInt(remainingPool.length);
+            result.push(remainingPool[idx]);
+            remainingPool.splice(idx, 1);
+          }
+
+          shuffleArray(result);
+        } else {
+          if (noRepeat && length > poolChars.length) {
+            note = "Length exceeds unique character pool (" + poolChars.length + "); consecutive repeats are prevented instead.";
+          }
+
+          // Guarantee at least one character from each selected category
+          const guaranteedSets = activeSets.slice(0, length);
+          for (let i = 0; i < guaranteedSets.length; i++) {
+            const setChars = guaranteedSets[i].chars;
+            result.push(setChars[getSecureRandomInt(setChars.length)]);
+          }
+
+          while (result.length < length) {
+            const candidate = combinedPool[getSecureRandomInt(combinedPool.length)];
+            if (noRepeat && result.length > 0 && candidate === result[result.length - 1] && combinedPool.length > 1) {
+              continue;
+            }
+            result.push(candidate);
+          }
+
+          shuffleArray(result);
+
+          // Ensure no adjacent duplicates if noRepeat is active after shuffle
+          if (noRepeat && combinedPool.length > 1) {
+            for (let i = 1; i < result.length; i++) {
+              if (result[i] === result[i - 1]) {
+                let replacement;
+                do {
+                  replacement = combinedPool[getSecureRandomInt(combinedPool.length)];
+                } while (replacement === result[i - 1] || (i + 1 < result.length && replacement === result[i + 1]));
+                result[i] = replacement;
+              }
+            }
+          }
+        }
+
+        return {
+          password: result.join(""),
+          poolSize: poolChars.length,
+          note: note
+        };
+      }
+
+      // --- Strength & Entropy Calculation ---
+      function calculateEntropy(length, poolSize, noRepeat) {
+        if (poolSize <= 1 || length <= 0) return 0;
+        if (noRepeat && length <= poolSize) {
+          // log2(P(poolSize, length))
+          let bits = 0;
+          for (let i = 0; i < length; i++) {
+            bits += Math.log2(poolSize - i);
+          }
+          return bits;
+        }
+        return length * Math.log2(poolSize);
+      }
+
+      function formatCrackTime(bits) {
+        // Assumes an offline attacker at 10^10 guesses/sec (10 billion/sec)
+        const guessesPerSec = 1e10;
+        const avgGuesses = Math.pow(2, bits - 1);
+        const seconds = avgGuesses / guessesPerSec;
+
+        if (!isFinite(seconds) || seconds > 3.1536e16) return "Millions of years";
+        if (seconds < 1) return "Instant";
+        if (seconds < 60) return Math.round(seconds) + " seconds";
+        const minutes = seconds / 60;
+        if (minutes < 60) return Math.round(minutes) + " minutes";
+        const hours = minutes / 60;
+        if (hours < 24) return Math.round(hours) + " hours";
+        const days = hours / 24;
+        if (days < 365) return Math.round(days) + " days";
+        const years = days / 365.25;
+        if (years < 1000) return Math.round(years) + " years";
+        if (years < 1e6) return Math.round(years / 1000) + "k years";
+        return "Millions of years";
+      }
+
+      function updateStrengthUI(bits) {
+        const roundedBits = Math.round(bits);
+        entropyBitsEl.textContent = roundedBits + " bits";
+        crackTimeEl.textContent = formatCrackTime(bits);
+
+        let level = 1;
+        let label = "Weak";
+        let colorVar = "var(--strength-weak)";
+
+        if (bits >= 80) {
+          level = 4;
+          label = "Strong";
+          colorVar = "var(--strength-strong)";
+        } else if (bits >= 60) {
+          level = 3;
+          label = "Good";
+          colorVar = "var(--strength-good)";
+        } else if (bits >= 40) {
+          level = 2;
+          label = "Fair";
+          colorVar = "var(--strength-fair)";
+        }
+
+        strengthLabel.textContent = label;
+        strengthLabel.style.color = colorVar;
+
+        for (let i = 0; i < strengthBars.length; i++) {
+          const bar = strengthBars[i];
+          const seg = Number(bar.getAttribute("data-seg"));
+          bar.style.backgroundColor = seg <= level ? colorVar : "var(--bg-hover)";
+        }
+      }
+
+      // --- Render Password with Subtle Syntax Tinting ---
+      function renderPasswordReadout(pw) {
+        passwordOutput.textContent = "";
+        const frag = document.createDocumentFragment();
+        for (let i = 0; i < pw.length; i++) {
+          const ch = pw[i];
+          if (ch >= "0" && ch <= "9") {
+            const span = document.createElement("span");
+            span.className = "ch-num";
+            span.textContent = ch;
+            frag.appendChild(span);
+          } else if (CHAR_SETS.symbols.indexOf(ch) !== -1) {
+            const span = document.createElement("span");
+            span.className = "ch-sym";
+            span.textContent = ch;
+            frag.appendChild(span);
+          } else {
+            frag.appendChild(document.createTextNode(ch));
+          }
+        }
+        passwordOutput.appendChild(frag);
+      }
+
+      // --- Session History ---
+      function addToHistory(pw, label) {
+        if (!pw) return;
+        if (sessionHistory.length > 0 && sessionHistory[0].pw === pw) return;
+        sessionHistory.unshift({ pw: pw, length: pw.length, strength: label });
+        if (sessionHistory.length > 8) {
+          sessionHistory = sessionHistory.slice(0, 8);
+        }
+        renderHistory();
+      }
+
+      function renderHistory() {
+        historyList.textContent = "";
+        historyEmpty.hidden = sessionHistory.length > 0;
+        clearHistoryBtn.disabled = sessionHistory.length === 0;
+
+        for (let i = 0; i < sessionHistory.length; i++) {
+          const item = sessionHistory[i];
+          const li = document.createElement("li");
+          li.className = "history-item";
+
+          const codeSpan = document.createElement("span");
+          codeSpan.className = "history-pw";
+          codeSpan.textContent = item.pw;
+
+          const metaSpan = document.createElement("span");
+          metaSpan.className = "history-meta";
+          metaSpan.textContent = item.length + " chars · " + item.strength;
+
+          const copyItemBtn = document.createElement("button");
+          copyItemBtn.type = "button";
+          copyItemBtn.className = "text-action-btn";
+          copyItemBtn.textContent = "Copy";
+          copyItemBtn.setAttribute("aria-label", "Copy password from session history");
+          copyItemBtn.addEventListener("click", (function (pwToCopy, btn) {
+            return function () {
+              copyTextToClipboard(pwToCopy, function () {
+                btn.textContent = "Copied";
+                setTimeout(function () {
+                  btn.textContent = "Copy";
+                }, 1500);
+              });
+            };
+          })(item.pw, copyItemBtn));
+
+          li.appendChild(codeSpan);
+          li.appendChild(metaSpan);
+          li.appendChild(copyItemBtn);
+          historyList.appendChild(li);
+        }
+      }
+
+      // --- Clipboard Helper ---
+      function copyTextToClipboard(text, onSuccess) {
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(text).then(onSuccess).catch(function () {
+            fallbackCopy(text, onSuccess);
+          });
+        } else {
+          fallbackCopy(text, onSuccess);
+        }
+      }
+
+      function fallbackCopy(text, onSuccess) {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.setAttribute("readonly", "");
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand("copy");
+          onSuccess();
+        } catch (err) {
+          // Ignore copy failure in restricted contexts
+        }
+        document.body.removeChild(ta);
+      }
+
+      function triggerCopyFeedback() {
+        copyLabel.textContent = "Copied";
+        copyIcon.hidden = true;
+        checkIcon.hidden = false;
+        if (copyResetTimer) clearTimeout(copyResetTimer);
+        copyResetTimer = setTimeout(function () {
+          copyLabel.textContent = "Copy";
+          copyIcon.hidden = false;
+          checkIcon.hidden = true;
+        }, 1800);
+      }
+
+      // --- Core Update Flow ---
+      function syncPresetButtons() {
+        const len = Number(lengthSlider.value);
+        const u = optUpper.checked;
+        const l = optLower.checked;
+        const n = optNumbers.checked;
+        const s = optSymbols.checked;
+        const amb = optAmbiguous.checked;
+        const nr = optNoRepeat.checked;
+
+        let activePreset = "";
+        if (len === 16 && u && l && n && s && !amb && !nr) activePreset = "strong";
+        else if (len === 16 && u && l && n && !s && amb && !nr) activePreset = "readable";
+        else if (len === 8 && !u && !l && n && !s && !amb && !nr) activePreset = "pin";
+        else if (len === 32 && u && l && n && s && !amb && !nr) activePreset = "ultra";
+
+        presetButtons.forEach(function (btn) {
+          btn.setAttribute("aria-pressed", String(btn.getAttribute("data-preset") === activePreset));
+        });
+      }
+
+      function refreshPassword(recordPrevious) {
+        if (recordPrevious && currentPassword) {
+          addToHistory(currentPassword, strengthLabel.textContent);
+        }
+
+        let len = parseInt(lengthSlider.value, 10);
+        if (isNaN(len) || len < 8) len = 8;
+        if (len > 64) len = 64;
+        lengthSlider.value = String(len);
+        lengthNumber.value = String(len);
+
+        const generated = generatePassword(len);
+        currentPassword = generated.password;
+        renderPasswordReadout(currentPassword);
+
+        const bits = calculateEntropy(len, generated.poolSize, optNoRepeat.checked);
+        updateStrengthUI(bits);
+        ruleNotice.textContent = generated.note;
+        syncPresetButtons();
+      }
+
+      // --- Event Listeners ---
+      const charCheckboxes = [optUpper, optLower, optNumbers, optSymbols];
+      charCheckboxes.forEach(function (cb) {
+        cb.addEventListener("change", function () {
+          const checkedCount = charCheckboxes.filter(function (c) {
+            return c.checked;
+          }).length;
+
+          if (checkedCount === 0) {
+            cb.checked = true;
+            ruleNotice.textContent = "At least one character set must stay enabled.";
+            return;
+          }
+          refreshPassword(false);
+        });
+      });
+
+      optAmbiguous.addEventListener("change", function () {
+        refreshPassword(false);
+      });
+
+      optNoRepeat.addEventListener("change", function () {
+        refreshPassword(false);
+      });
+
+      lengthSlider.addEventListener("input", function () {
+        lengthNumber.value = lengthSlider.value;
+        refreshPassword(false);
+      });
+
+      lengthNumber.addEventListener("change", function () {
+        let val = parseInt(lengthNumber.value, 10);
+        if (isNaN(val)) val = 16;
+        val = Math.max(8, Math.min(64, val));
+        lengthSlider.value = String(val);
+        lengthNumber.value = String(val);
+        refreshPassword(false);
+      });
+
+      presetButtons.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          const preset = btn.getAttribute("data-preset");
+          if (preset === "strong") {
+            lengthSlider.value = "16";
+            optUpper.checked = true;
+            optLower.checked = true;
+            optNumbers.checked = true;
+            optSymbols.checked = true;
+            optAmbiguous.checked = false;
+            optNoRepeat.checked = false;
+          } else if (preset === "readable") {
+            lengthSlider.value = "16";
+            optUpper.checked = true;
+            optLower.checked = true;
+            optNumbers.checked = true;
+            optSymbols.checked = false;
+            optAmbiguous.checked = true;
+            optNoRepeat.checked = false;
+          } else if (preset === "pin") {
+            lengthSlider.value = "8";
+            optUpper.checked = false;
+            optLower.checked = false;
+            optNumbers.checked = true;
+            optSymbols.checked = false;
+            optAmbiguous.checked = false;
+            optNoRepeat.checked = false;
+          } else if (preset === "ultra") {
+            lengthSlider.value = "32";
+            optUpper.checked = true;
+            optLower.checked = true;
+            optNumbers.checked = true;
+            optSymbols.checked = true;
+            optAmbiguous.checked = false;
+            optNoRepeat.checked = false;
+          }
+          refreshPassword(true);
+        });
+      });
+
+      regenerateBtn.addEventListener("click", function () {
+        refreshPassword(true);
+      });
+
+      copyBtn.addEventListener("click", function () {
+        if (!currentPassword) return;
+        copyTextToClipboard(currentPassword, function () {
+          triggerCopyFeedback();
+          addToHistory(currentPassword, strengthLabel.textContent);
+        });
+      });
+
+      clearHistoryBtn.addEventListener("click", function () {
+        sessionHistory = [];
+        renderHistory();
+      });
+
+      // Initialize first password on load
+      refreshPassword(false);
+      renderHistory();
+    })();
+  </script>
+</body>
+</html>
